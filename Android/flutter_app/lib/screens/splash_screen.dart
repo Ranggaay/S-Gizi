@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app_design.dart';
-import 'onboarding_screen.dart';
+import '../app_state.dart';
+import '../features/auth/screens/onboarding_screen.dart';
+import '../features/dashboard/screens/parent_dashboard_screen.dart';
+import '../features/nutritionist/screens/nutritionist_dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -25,20 +28,31 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..forward();
-    _imageScale = Tween<double>(begin: 1.22, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutCubic,
-      ),
-    );
-    _imageOpacity = Tween<double>(begin: 0.2, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _imageScale = Tween<double>(
+      begin: 1.22,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _imageOpacity = Tween<double>(
+      begin: 0.2,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
-    Timer(const Duration(milliseconds: 1500), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(fadeRoute(const OnboardingScreen()));
-    });
+    Timer(const Duration(milliseconds: 1500), _openNextScreen);
+  }
+
+  Future<void> _openNextScreen() async {
+    await SgiziAppState.instance.restoreSession();
+    if (!mounted) return;
+
+    final state = SgiziAppState.instance;
+    Widget next = const OnboardingScreen();
+    if (state.isAuthenticated) {
+      next = state.role == 'nutritionist'
+          ? const NutritionistDashboardScreen()
+          : const ParentDashboardScreen();
+    }
+
+    Navigator.of(context).pushReplacement(fadeRoute(next));
   }
 
   @override
@@ -87,7 +101,9 @@ class _SplashScreenState extends State<SplashScreen>
                             borderRadius: BorderRadius.circular(40),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF4B8E96).withValues(alpha: 0.24),
+                                color: const Color(
+                                  0xFF4B8E96,
+                                ).withValues(alpha: 0.24),
                                 blurRadius: 42,
                                 spreadRadius: 4,
                               ),
@@ -99,7 +115,7 @@ class _SplashScreenState extends State<SplashScreen>
                               'assets/image/Logo_SplashScreen.png',
                               fit: BoxFit.cover,
                               filterQuality: FilterQuality.high,
-                              errorBuilder: (_, __, ___) => Image.asset(
+                              errorBuilder: (_, _, _) => Image.asset(
                                 'assets/image/logo_sgizi.png',
                                 fit: BoxFit.contain,
                               ),

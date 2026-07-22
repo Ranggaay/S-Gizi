@@ -25,9 +25,6 @@
 </nav>
 
 <main class="container py-4">
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
     @if ($errors->any())
         <div class="alert alert-danger">
             <div class="fw-semibold mb-2">Validasi gagal</div>
@@ -45,4 +42,3 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

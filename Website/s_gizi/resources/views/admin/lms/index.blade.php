@@ -48,7 +48,7 @@
                         @if ($type === 'age') <td>{{ $row->umur }}</td><td>{{ $row->indikator }}</td> @else <td>{{ $type === 'wfl' ? $row->panjang : $row->tinggi }}</td> @endif
                         <td>{{ $row->jk }}</td><td>{{ $row->L }}</td><td>{{ $row->M }}</td><td>{{ $row->S }}</td>
                         <td class="text-end">
-                            <form method="post" action="{{ route('admin.lms.destroy', [$type, $row->id]) }}" onsubmit="return confirm('Hapus data LMS?')">
+                            <form method="post" action="{{ route('admin.lms.destroy', [$type, $row->id]) }}" data-confirm="Hapus data LMS?">
                                 @csrf @method('delete')
                                 <button class="btn btn-sm btn-outline-danger">Hapus</button>
                             </form>

@@ -1,7 +1,7 @@
 import 'dart:developer' as developer;
 import 'dart:math';
 
-import '../models/child_model.dart';
+import 'package:s_gizi/models/child_model.dart';
 import 'data_service.dart';
 
 class CalculationResult {
@@ -28,6 +28,7 @@ class CalculationService {
 
   final DataService _dataService;
 
+  // Kode ini digunakan untuk mengambil LMS dan menghitung tiga indikator Z-Score anak.
   Future<CalculationResult> calculate(ChildModel child) async {
     final gender = child.normalizedGender;
     final position = child.normalizedPosition;
@@ -96,12 +97,14 @@ class CalculationService {
     );
   }
 
+  // Kode ini digunakan untuk menghitung nilai Z-Score menggunakan rumus WHO LMS.
   double _calculateZScore({
     required double l,
     required double m,
     required double s,
     required double x,
   }) {
+    // PRESENTASI TA: Implementasi Z-Score lokal Flutter untuk perhitungan berbasis data LMS perangkat.
     if (x <= 0 || m <= 0 || s <= 0) {
       throw Exception('Nilai LMS atau data pengukuran tidak valid.');
     }
@@ -117,6 +120,7 @@ class CalculationService {
     return zScore.toDouble();
   }
 
+  // Kode ini digunakan untuk membuat catatan detail proses perhitungan Z-Score.
   String _buildDebugLog({
     required ChildModel child,
     required String gender,
@@ -130,6 +134,7 @@ class CalculationService {
     required double tbU,
     required double bbTb,
   }) {
+    // Kode ini digunakan untuk membentuk satu baris informasi nilai LMS.
     String lmsLine(String label, LmsRecord record) {
       return '$label LMS: L=${record.l}, M=${record.m}, S=${record.s}';
     }

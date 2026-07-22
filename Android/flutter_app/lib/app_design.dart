@@ -2,10 +2,22 @@ import 'package:flutter/material.dart';
 
 const String sgiziLogoAsset = 'assets/image/logo_sgizi.png';
 
+/// Spacing ringkas untuk layout production-ready.
+class SgSpacing {
+  const SgSpacing._();
+
+  static const pageH = 16.0;
+  static const pageV = 12.0;
+  static const section = 14.0;
+  static const item = 8.0;
+  static const cardPad = 12.0;
+}
+
 class SgColors {
   const SgColors._();
 
   static const primary = Color(0xFF4B8E96);
+  static const primaryTeal = Color(0xFF0B7A86);
   static const primaryDark = Color(0xFF2F737A);
   static const secondary = Color(0xFFA8D5BA);
   static const background = Color(0xFFF5F7F6);
@@ -71,7 +83,7 @@ class AppLogo extends StatelessWidget {
             width: size,
             height: size,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(
+            errorBuilder: (_, _, _) => Container(
               width: size,
               height: size,
               decoration: BoxDecoration(
@@ -97,42 +109,101 @@ class AppLogo extends StatelessWidget {
   }
 }
 
+class SgAvatar extends StatelessWidget {
+  const SgAvatar({
+    super.key,
+    required this.name,
+    this.radius = 28,
+    this.gender,
+    this.icon,
+  });
+
+  final String name;
+  final String? gender;
+  final double radius;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = getInitialName(name);
+    final colors = avatarGradientColors(name);
+
+    return Container(
+      width: radius * 2,
+      height: radius * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: colors,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.last.withValues(alpha: 0.22),
+            blurRadius: radius * 0.55,
+            offset: Offset(0, radius * 0.2),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w900,
+          fontSize: radius * 0.82,
+          height: 1,
+        ),
+      ),
+    );
+  }
+}
+
+String getInitialName(String? name) {
+  final value = (name ?? '').trim();
+  if (value.isEmpty) return 'A';
+  final first = value.characters.first.toUpperCase();
+  return RegExp(r'[A-Z0-9]').hasMatch(first) ? first : 'A';
+}
+
+List<Color> avatarGradientColors(String? seed) {
+  const palettes = [
+    [Color(0xFF4B8E96), Color(0xFF6FC7C8)],
+    [Color(0xFF5B8DEF), Color(0xFF8DB7FF)],
+    [Color(0xFF58B98B), Color(0xFF9DDFC1)],
+    [Color(0xFFE89B5B), Color(0xFFFFC08A)],
+    [Color(0xFF8B7AE6), Color(0xFFC2B7FF)],
+    [Color(0xFFE06F91), Color(0xFFFFA9BD)],
+  ];
+  final text = (seed ?? '').trim();
+  if (text.isEmpty) return palettes.first;
+  final hash = text.codeUnits.fold<int>(
+    0,
+    (value, code) => (value + code) & 0x7fffffff,
+  );
+  return palettes[hash % palettes.length];
+}
+
 class ChildAvatar extends StatelessWidget {
   const ChildAvatar({
     super.key,
     required this.name,
     required this.gender,
-    this.photoUrl,
     this.radius = 28,
   });
 
   final String name;
   final String gender;
-  final String? photoUrl;
   final double radius;
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = photoUrl?.trim();
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      return CircleAvatar(
-        radius: radius,
-        backgroundColor: const Color(0xFFD9EEE7),
-        backgroundImage: NetworkImage(imageUrl),
-      );
-    }
-
-    final isFemale = gender.toLowerCase().startsWith('p');
-    final accent = isFemale ? const Color(0xFFFF8FA3) : SgColors.primary;
-
-    return CircleAvatar(
+    return SgAvatar(
+      name: name,
+      gender: gender,
       radius: radius,
-      backgroundColor: accent.withValues(alpha: 0.12),
-      child: Icon(
-        isFemale ? Icons.face_3_rounded : Icons.face_rounded,
-        color: accent,
-        size: radius,
-      ),
+      icon: Icons.child_care_rounded,
     );
   }
 }
@@ -141,11 +212,12 @@ class HealthCard extends StatelessWidget {
   const HealthCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(SgSpacing.cardPad),
     this.margin,
     this.color = SgColors.surface,
     this.borderColor,
     this.onTap,
+    this.dense = false,
   });
 
   final Widget child;
@@ -154,9 +226,11 @@ class HealthCard extends StatelessWidget {
   final Color color;
   final Color? borderColor;
   final VoidCallback? onTap;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
+    final radius = dense ? 16.0 : 18.0;
     final card = AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
@@ -164,13 +238,13 @@ class HealthCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(radius),
         border: Border.all(color: borderColor ?? SgColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: dense ? 0.04 : 0.06),
+            blurRadius: dense ? 12 : 16,
+            offset: Offset(0, dense ? 6 : 8),
           ),
         ],
       ),
@@ -184,7 +258,7 @@ class HealthCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(radius),
         onTap: onTap,
         child: card,
       ),
@@ -197,25 +271,33 @@ class StatusBadge extends StatelessWidget {
     super.key,
     required this.text,
     this.color = SgColors.success,
+    this.compact = false,
   });
 
   final String text;
   final Color color;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 8 : 10,
+        vertical: compact ? 4 : 6,
+      ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.16),
+        color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.36)),
+        border: Border.all(color: color.withValues(alpha: 0.32)),
       ),
       child: Text(
         text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: AppTypography.caption.copyWith(
           color: color,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
+          fontSize: compact ? 11 : 12,
         ),
       ),
     );
@@ -298,37 +380,50 @@ class EmptyState extends StatelessWidget {
     required this.message,
     this.actionLabel,
     this.onAction,
+    this.icon = Icons.inbox_outlined,
+    this.assetImage,
   });
 
   final String title;
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final IconData icon;
+  final String? assetImage;
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: HealthCard(
+          dense: true,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircleAvatar(
-                radius: 32,
-                backgroundColor: Color(0xFFE9F6F2),
-                child: Icon(Icons.inbox_outlined, color: SgColors.primary),
-              ),
-              const SizedBox(height: 16),
+              if (assetImage != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    assetImage!,
+                    height: 88,
+                    width: 88,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => _emptyIcon(icon),
+                  ),
+                )
+              else
+                _emptyIcon(icon),
+              const SizedBox(height: 12),
               Text(title, style: AppTypography.h2, textAlign: TextAlign.center),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 message,
-                style: AppTypography.body,
+                style: AppTypography.body.copyWith(fontSize: 13),
                 textAlign: TextAlign.center,
               ),
               if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 PrimaryButton(label: actionLabel!, onPressed: onAction),
               ],
             ],
@@ -339,11 +434,29 @@ class EmptyState extends StatelessWidget {
   }
 }
 
-class ErrorState extends StatelessWidget {
-  const ErrorState({super.key, required this.message, required this.onRetry});
+Widget _emptyIcon(IconData icon) {
+  return CircleAvatar(
+    radius: 28,
+    backgroundColor: const Color(0xFFE9F6F2),
+    child: Icon(icon, color: SgColors.primary, size: 28),
+  );
+}
 
+class ErrorState extends StatelessWidget {
+  const ErrorState({
+    super.key,
+    required this.message,
+    required this.onRetry,
+    this.title = 'Terjadi Kendala',
+    this.icon = Icons.wifi_off_rounded,
+    this.color = SgColors.danger,
+  });
+
+  final String title;
   final String message;
   final VoidCallback onRetry;
+  final IconData icon;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -354,13 +467,13 @@ class ErrorState extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 32,
-                backgroundColor: Color(0xFFFFEBEE),
-                child: Icon(Icons.wifi_off_rounded, color: SgColors.danger),
+                backgroundColor: color.withValues(alpha: 0.12),
+                child: Icon(icon, color: color),
               ),
               const SizedBox(height: 16),
-              const Text('Terjadi Kendala', style: AppTypography.h2),
+              Text(title, style: AppTypography.h2, textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(
                 message,
@@ -476,8 +589,8 @@ PageRouteBuilder<T> fadeRoute<T>(Widget page) {
   return PageRouteBuilder<T>(
     transitionDuration: const Duration(milliseconds: 260),
     reverseTransitionDuration: const Duration(milliseconds: 220),
-    pageBuilder: (_, __, ___) => page,
-    transitionsBuilder: (_, animation, __, child) {
+    pageBuilder: (_, _, _) => page,
+    transitionsBuilder: (_, animation, _, child) {
       return FadeTransition(
         opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
         child: SlideTransition(

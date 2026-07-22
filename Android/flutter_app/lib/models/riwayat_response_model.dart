@@ -12,6 +12,13 @@ class RiwayatResponseModel {
               .map(RiwayatItemModel.fromJson)
               .toList()
         : <RiwayatItemModel>[];
+    items.sort((a, b) {
+      final ad = DateTime.tryParse(a.tanggalUkur) ?? DateTime(1900);
+      final bd = DateTime.tryParse(b.tanggalUkur) ?? DateTime(1900);
+      final dateCompare = ad.compareTo(bd);
+      if (dateCompare != 0) return dateCompare;
+      return a.id.compareTo(b.id);
+    });
 
     return RiwayatResponseModel(
       child: ChildInfoModel.fromJson(
@@ -28,14 +35,12 @@ class ChildInfoModel {
     required this.nama,
     required this.tanggalLahir,
     required this.jenisKelamin,
-    this.photoUrl,
   });
 
   final int id;
   final String nama;
   final String tanggalLahir;
   final String jenisKelamin;
-  final String? photoUrl;
 
   factory ChildInfoModel.fromJson(Map<String, dynamic> json) {
     return ChildInfoModel(
@@ -43,10 +48,6 @@ class ChildInfoModel {
       nama: json['nama'] as String? ?? '-',
       tanggalLahir: json['tanggal_lahir'] as String? ?? '-',
       jenisKelamin: json['jenis_kelamin'] as String? ?? '-',
-      photoUrl:
-          json['photo_url'] as String? ??
-          json['foto_url'] as String? ??
-          json['avatar_url'] as String?,
     );
   }
 }
@@ -84,6 +85,8 @@ class RiwayatItemModel {
     required this.zBbu,
     required this.zTbu,
     required this.zBbtb,
+    this.isAnomaly = false,
+    this.dataStatus = 'normal',
   });
 
   final int id;
@@ -97,6 +100,8 @@ class RiwayatItemModel {
   final double? zBbu;
   final double? zTbu;
   final double? zBbtb;
+  final bool isAnomaly;
+  final String dataStatus;
 
   factory RiwayatItemModel.fromJson(Map<String, dynamic> json) {
     final z = json['z_score'] as Map<String, dynamic>? ?? const {};
@@ -115,6 +120,8 @@ class RiwayatItemModel {
       zBbu: parseNullableNum(z['bbu']),
       zTbu: parseNullableNum(z['tbu']),
       zBbtb: parseNullableNum(z['bbtb']),
+      isAnomaly: json['is_anomaly'] == true,
+      dataStatus: json['data_status'] as String? ?? 'normal',
     );
   }
 }

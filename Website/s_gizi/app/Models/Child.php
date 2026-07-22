@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Child extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'children';
 
@@ -30,6 +32,14 @@ class Child extends Model
         return $this->hasMany(Measurement::class, 'child_id');
     }
 
+    public function latestMeasurement(): HasOne
+    {
+        return $this->hasOne(Measurement::class, 'child_id')->ofMany([
+            'tanggal_ukur' => 'max',
+            'id' => 'max',
+        ]);
+    }
+
     public function growthRecords(): HasMany
     {
         return $this->hasMany(GrowthRecord::class, 'child_id');
@@ -40,4 +50,3 @@ class Child extends Model
         return $this->belongsTo(User::class);
     }
 }
-

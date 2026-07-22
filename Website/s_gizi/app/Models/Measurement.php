@@ -24,12 +24,20 @@ class Measurement extends Model
         'z_bbtb',
         'kategori',
         'status_gabungan',
+        'is_anomaly',
+        'data_status',
+        'validation_status',
+        'validation_note',
+        'monitoring_status',
+        'is_confirmed_by_parent',
         'created_at',
     ];
 
     protected $casts = [
         'tanggal_ukur' => 'date',
         'kategori' => 'array',
+        'is_anomaly' => 'boolean',
+        'is_confirmed_by_parent' => 'boolean',
         'created_at' => 'datetime',
     ];
 
@@ -38,4 +46,3 @@ class Measurement extends Model
         return $this->belongsTo(Child::class, 'child_id');
     }
 }
-

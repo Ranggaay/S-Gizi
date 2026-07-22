@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/wa-service/node_modules
+/wa-service/auth_state
+/wa-service/.env

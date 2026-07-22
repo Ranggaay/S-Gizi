@@ -4,7 +4,6 @@ class MobileChildModel {
     required this.nama,
     required this.tanggalLahir,
     required this.jenisKelamin,
-    this.photoUrl,
     this.latestStatus,
     this.latestMeasurementAt,
   });
@@ -13,7 +12,6 @@ class MobileChildModel {
   final String nama;
   final String tanggalLahir;
   final String jenisKelamin;
-  final String? photoUrl;
   final String? latestStatus;
   final String? latestMeasurementAt;
 
@@ -23,10 +21,6 @@ class MobileChildModel {
       nama: json['nama'] as String? ?? '-',
       tanggalLahir: json['tanggal_lahir'] as String? ?? '-',
       jenisKelamin: json['jenis_kelamin'] as String? ?? '-',
-      photoUrl:
-          json['photo_url'] as String? ??
-          json['foto_url'] as String? ??
-          json['avatar_url'] as String?,
       latestStatus: json['latest_status'] as String?,
       latestMeasurementAt: json['latest_measurement_at'] as String?,
     );
@@ -37,7 +31,6 @@ class MobileChildModel {
     String? nama,
     String? tanggalLahir,
     String? jenisKelamin,
-    String? photoUrl,
     String? latestStatus,
     String? latestMeasurementAt,
   }) {
@@ -46,7 +39,6 @@ class MobileChildModel {
       nama: nama ?? this.nama,
       tanggalLahir: tanggalLahir ?? this.tanggalLahir,
       jenisKelamin: jenisKelamin ?? this.jenisKelamin,
-      photoUrl: photoUrl ?? this.photoUrl,
       latestStatus: latestStatus ?? this.latestStatus,
       latestMeasurementAt: latestMeasurementAt ?? this.latestMeasurementAt,
     );

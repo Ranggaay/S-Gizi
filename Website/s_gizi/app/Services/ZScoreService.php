@@ -4,11 +4,13 @@ namespace App\Services;
 
 class ZScoreService
 {
+    // PRESENTASI TA: Rumus inti Z-Score WHO menggunakan parameter LMS.
     /**
      * Rumus WHO LMS:
      * - jika L != 0: Z = ((X/M)^L - 1) / (L*S)
      * - jika L == 0: Z = ln(X/M) / S
      */
+    // Kode ini digunakan untuk menghitung nilai Z-Score berdasarkan rumus WHO LMS.
     public function zScore(float $x, ?float $l, ?float $m, ?float $s): ?float
     {
         if (!$this->isValidNumber($x) || !$this->isValidNumber($l) || !$this->isValidNumber($m) || !$this->isValidNumber($s)) {
@@ -43,9 +45,9 @@ class ZScoreService
         return is_finite($z) ? $z : null;
     }
 
+    // Kode ini digunakan untuk memastikan nilai berupa angka yang valid dan terbatas.
     private function isValidNumber(?float $value): bool
     {
         return $value !== null && is_finite($value);
     }
 }
-

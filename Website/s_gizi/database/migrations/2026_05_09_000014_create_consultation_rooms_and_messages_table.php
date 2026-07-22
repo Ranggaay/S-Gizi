@@ -22,6 +22,7 @@ return new class extends Migration
                 $table->text('last_message')->nullable();
                 $table->timestamp('last_message_at')->nullable();
                 $table->unsignedInteger('unread_count')->default(0);
+                $table->unsignedBigInteger('last_shared_measurement_id')->nullable();
                 $table->timestamps();
                 $table->unique(['user_id', 'child_id', 'expert_id']);
             });

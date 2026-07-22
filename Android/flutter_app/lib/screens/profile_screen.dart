@@ -6,12 +6,12 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 
-
 import '../app_design.dart';
 import '../app_state.dart';
 import '../models/mobile_child_model.dart';
 import '../services/api_service.dart';
 import '../utils/nutrition_display_utils.dart';
+import '../widgets/nutrition_status_badges.dart';
 import 'add_child_screen.dart';
 import 'account_info_screen.dart';
 import 'auth_screen.dart';
@@ -51,10 +51,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _load() async {
     if (!_state.isAuthenticated) return;
-    final results = await Future.wait([
-      _api.getChildren(),
-      _api.getProfile(),
-    ]);
+    final results = await Future.wait([_api.getChildren(), _api.getProfile()]);
     final children = results[0] as List<MobileChildModel>;
     final profile = results[1] as Map<String, dynamic>;
     _state.setChildren(children);
@@ -82,80 +79,92 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final phone = (profile?['phone'] as String? ?? '-').trim();
             final role = (profile?['role'] as String? ?? 'orang_tua').trim();
             return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _ProfileHeaderCard(
-                    name: name.isEmpty ? 'Siti Aminah' : name,
-                    subtitle: _profileRoleToLabel(role, phone),
-                    onEditTap: () async {
-                      await Navigator.of(context).push(
-                        fadeRoute(const AccountInfoScreen()),
-                      );
-                      if (!mounted) return;
-                      _retry();
-                    },
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    SgSpacing.pageH,
+                    SgSpacing.pageV,
+                    SgSpacing.pageH,
+                    20,
                   ),
-                  const SizedBox(height: 18),
-                  _ChildrenSection(
-                    children: _state.children,
-                    activeChildId: _state.activeChildId,
-                    onAdd: () => Navigator.of(context).push(
-                      fadeRoute(const AddChildScreen()),
-                    ),
-                    onSelect: (id) => _state.setActiveChild(id),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ProfileHeaderCard(
+                        name: name.isEmpty ? 'Siti Aminah' : name,
+                        subtitle: _profileRoleToLabel(role, phone),
+                        onEditTap: () async {
+                          await Navigator.of(
+                            context,
+                          ).push(fadeRoute(const AccountInfoScreen()));
+                          if (!mounted) return;
+                          _retry();
+                        },
+                      ),
+                      const SizedBox(height: 18),
+                      _ChildrenSection(
+                        children: _state.children,
+                        activeChildId: _state.activeChildId,
+                        onAdd: () => Navigator.of(
+                          context,
+                        ).push(fadeRoute(const AddChildScreen())),
+                        onSelect: (id) => _state.setActiveChild(id),
+                      ),
+                      const SizedBox(height: 22),
+                      Text(
+                        'Pengaturan',
+                        style: AppTypography.h2.copyWith(
+                          color: SgColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _SettingsCard(
+                        onTapAccount: () async {
+                          await Navigator.of(
+                            context,
+                          ).push(fadeRoute(const AccountInfoScreen()));
+                          if (!mounted) return;
+                          _retry();
+                        },
+                        onTapPrivacy: () => Navigator.of(
+                          context,
+                        ).push(fadeRoute(const SecurityScreen())),
+                        onTapHelp: () => Navigator.of(
+                          context,
+                        ).push(fadeRoute(const HelpScreen())),
+                      ),
+                      const SizedBox(height: 18),
+                      _LogoutCard(
+                        onLogout: () async {
+                          final ok = await _confirmLogout(context);
+                          if (ok != true) return;
+                          await _state.logout();
+                          if (!context.mounted) return;
+                          Navigator.of(context).pushAndRemoveUntil(
+                            fadeRoute(const AuthScreen()),
+                            (_) => false,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        'S-GIZI • PREMIUM HEALTHCARE UI',
+                        textAlign: TextAlign.center,
+                        style: AppTypography.caption.copyWith(
+                          letterSpacing: 1,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 22),
-                  Text(
-                    'Pengaturan',
-                    style: AppTypography.h2.copyWith(color: SgColors.textPrimary),
-                  ),
-                  const SizedBox(height: 12),
-                  _SettingsCard(
-                    onTapAccount: () async {
-                      await Navigator.of(context).push(
-                        fadeRoute(const AccountInfoScreen()),
-                      );
-                      if (!mounted) return;
-                      _retry();
-                    },
-                    onTapPrivacy: () => Navigator.of(context).push(
-                      fadeRoute(const SecurityScreen()),
-                    ),
-                    onTapHelp: () => Navigator.of(context).push(
-                      fadeRoute(const HelpScreen()),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  _LogoutCard(
-                    onLogout: () async {
-                      final ok = await _confirmLogout(context);
-                      if (ok != true) return;
-                      _state.logout();
-                      if (!context.mounted) return;
-                      Navigator.of(context).pushAndRemoveUntil(
-                        fadeRoute(const AuthScreen()),
-                        (_) => false,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    'S-GIZI • PREMIUM HEALTHCARE UI',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.caption.copyWith(
-                      letterSpacing: 1,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            )
+                )
                 .animate()
                 .fadeIn(duration: 260.ms, curve: Curves.easeOut)
-                .slideY(begin: 0.02, end: 0, duration: 260.ms, curve: Curves.easeOut);
+                .slideY(
+                  begin: 0.02,
+                  end: 0,
+                  duration: 260.ms,
+                  curve: Curves.easeOut,
+                );
           },
         ),
       ),
@@ -177,161 +186,154 @@ class _ProfileHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF085B63), Color(0xFF0B7A86)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.10),
-            blurRadius: 26,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -30,
-            top: -40,
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF085B63), Color(0xFF0B7A86)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ),
-          Positioned(
-            left: -50,
-            bottom: -50,
-            child: Container(
-              width: 170,
-              height: 170,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.10),
+                blurRadius: 26,
+                offset: const Offset(0, 14),
               ),
-            ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-            child: Row(
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 74,
-                      height: 74,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.16),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.22),
-                        ),
-                      ),
-                      child: ClipOval(
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Image.asset(
-                            'assets/image/onboarding_consultation.png',
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                    )
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
-                        .moveY(begin: 0, end: -2, duration: 1800.ms),
-                    Positioned(
-                      right: 2,
-                      bottom: 2,
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF34C759),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: AppTypography.h2.copyWith(
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: AppTypography.body.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.14),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.18),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              PhosphorIconsRegular.sealCheck,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Akun Terverifikasi',
-                              style: AppTypography.caption.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+          child: Stack(
+            children: [
+              Positioned(
+                right: -30,
+                top: -40,
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.08),
                   ),
                 ),
-                const SizedBox(width: 10),
-                _IconPillButton(
-                  icon: LucideIcons.pencil,
-                  onTap: onEditTap,
+              ),
+              Positioned(
+                left: -50,
+                bottom: -50,
+                child: Container(
+                  width: 170,
+                  height: 170,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.06),
+                  ),
                 ),
-              ],
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+                child: Row(
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                              width: 74,
+                              height: 74,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withValues(alpha: 0.16),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.22),
+                                ),
+                              ),
+                              child: SgAvatar(
+                                name: name,
+                                radius: 37,
+                                icon: Icons.person_rounded,
+                              ),
+                            )
+                            .animate(onPlay: (c) => c.repeat(reverse: true))
+                            .moveY(begin: 0, end: -2, duration: 1800.ms),
+                        Positioned(
+                          right: 2,
+                          bottom: 2,
+                          child: Container(
+                            width: 12,
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF34C759),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: AppTypography.h2.copyWith(
+                              color: Colors.white,
+                              fontSize: 20,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            subtitle,
+                            style: AppTypography.body.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.18),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  PhosphorIconsRegular.sealCheck,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Akun Terverifikasi',
+                                  style: AppTypography.caption.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    _IconPillButton(icon: LucideIcons.pencil, onTap: onEditTap),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    )
+        )
         .animate()
         .fadeIn(duration: 320.ms, curve: Curves.easeOut)
         .slideY(begin: -0.03, end: 0, duration: 320.ms, curve: Curves.easeOut);
@@ -381,75 +383,77 @@ class _ChildrenSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                'Daftar Anak',
-                style: AppTypography.h2.copyWith(color: SgColors.textPrimary),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            TextButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(LucideIcons.plus),
-              label: const Text('Tambah'),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF0B7A86),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        if (children.isEmpty)
-          HealthCard(
-            child: Row(
+            Row(
               children: [
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF7FD6C2).withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(
-                    LucideIcons.baby,
-                    color: Color(0xFF0B7A86),
+                Expanded(
+                  child: Text(
+                    'Daftar Anak',
+                    style: AppTypography.h2.copyWith(
+                      color: SgColors.textPrimary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Text(
-                    'Belum ada data anak. Tambahkan anak untuk mulai memantau status gizi.',
-                    style: AppTypography.body,
+                TextButton.icon(
+                  onPressed: onAdd,
+                  icon: const Icon(LucideIcons.plus),
+                  label: const Text('Tambah'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF0B7A86),
                   ),
                 ),
               ],
             ),
-          )
-        else
-          SizedBox(
-            height: 152,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: children.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                final c = children[index];
-                final active = c.id == activeChildId;
-                return _ChildCard(
-                  child: c,
-                  active: active,
-                  onTap: () => onSelect(c.id),
-                );
-              },
-            ),
-          ),
-      ],
-    )
+            const SizedBox(height: 10),
+            if (children.isEmpty)
+              HealthCard(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7FD6C2).withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        LucideIcons.baby,
+                        color: Color(0xFF0B7A86),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Belum ada data anak. Tambahkan anak untuk mulai memantau status gizi.',
+                        style: AppTypography.body,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              SizedBox(
+                height: 88,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: children.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final c = children[index];
+                    final active = c.id == activeChildId;
+                    return _ChildCard(
+                      child: c,
+                      active: active,
+                      onTap: () => onSelect(c.id),
+                    );
+                  },
+                ),
+              ),
+          ],
+        )
         .animate()
         .fadeIn(duration: 320.ms, curve: Curves.easeOut)
         .slideY(begin: 0.02, end: 0, duration: 320.ms, curve: Curves.easeOut);
@@ -469,30 +473,28 @@ class _ChildCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = (child.latestStatus ?? '').trim().isEmpty
-        ? 'Status: Belum ada'
-        : 'Status: ${child.latestStatus}';
+    final statusRaw = (child.latestStatus ?? '').trim();
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(14),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
-        width: 260,
-        padding: const EdgeInsets.all(16),
+        width: 210,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: active ? const Color(0xFF0B7A86) : const Color(0xFFE2E8E6),
-            width: active ? 1.8 : 1,
+            width: active ? 1.6 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: active ? 0.10 : 0.06),
-              blurRadius: active ? 26 : 18,
-              offset: const Offset(0, 12),
+              color: Colors.black.withValues(alpha: active ? 0.08 : 0.04),
+              blurRadius: active ? 14 : 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -503,8 +505,7 @@ class _ChildCard extends StatelessWidget {
                 ChildAvatar(
                   name: child.nama,
                   gender: child.jenisKelamin,
-                  photoUrl: child.photoUrl,
-                  radius: 28,
+                  radius: 20,
                 ),
                 if (active)
                   Positioned(
@@ -522,48 +523,53 @@ class _ChildCard extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     child.nama,
-                    style: AppTypography.h3.copyWith(color: SgColors.textPrimary),
+                    style: AppTypography.h3.copyWith(
+                      color: SgColors.textPrimary,
+                      fontSize: 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    formatAgeFromBirthDate(
+                      child.tanggalLahir,
+                      source: 'profile_child_card',
+                    ),
+                    style: AppTypography.caption.copyWith(fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    '${child.jenisKelamin == 'P' ? 'Perempuan' : 'Laki-laki'} • ${formatAgeFromBirthDate(child.tanggalLahir)}',
-                    style: AppTypography.caption,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: active
-                          ? const Color(0xFF7FD6C2).withValues(alpha: 0.22)
-                          : const Color(0xFFF1F5F4),
-                      borderRadius: BorderRadius.circular(999),
+                  if (statusRaw.isEmpty)
+                    Text(
+                      'Belum diukur',
+                      style: AppTypography.caption.copyWith(fontSize: 10),
+                    )
+                  else
+                    NutritionStatusBadges(
+                      status: statusRaw,
+                      compact: true,
+                      spacing: 4,
+                      runSpacing: 4,
                     ),
-                    child: Text(
-                      status,
-                      style: AppTypography.caption.copyWith(
-                        color: active ? const Color(0xFF085B63) : SgColors.textSecondary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
                 ],
               ),
             ),
             const SizedBox(width: 6),
             PopupMenuButton<String>(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
+              elevation: 10,
+              color: Colors.white,
               onSelected: (value) async {
                 if (value == 'edit') {
                   await _showEditChildDialog(context, child);
@@ -572,23 +578,57 @@ class _ChildCard extends StatelessWidget {
                   await _showDeleteChildDialog(context, child);
                 }
               },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('Edit')),
-                PopupMenuItem(value: 'delete', child: Text('Hapus')),
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(
+                        LucideIcons.edit3,
+                        size: 18,
+                        color: SgColors.primaryTeal,
+                      ),
+                      SizedBox(width: 10),
+                      Text('Edit'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      const Icon(
+                        LucideIcons.trash2,
+                        size: 18,
+                        color: Color(0xFFE25555),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Hapus',
+                        style: AppTypography.body.copyWith(
+                          color: const Color(0xFFE25555),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
               icon: Icon(
                 LucideIcons.moreVertical,
-                color: active ? const Color(0xFF0B7A86) : SgColors.textSecondary,
+                color: active
+                    ? const Color(0xFF0B7A86)
+                    : SgColors.textSecondary,
               ),
             ),
           ],
         ),
       ),
     ).animate().scale(
-          begin: const Offset(0.99, 0.99),
-          end: const Offset(1, 1),
-          duration: 220.ms,
-        );
+      begin: const Offset(0.99, 0.99),
+      end: const Offset(1, 1),
+      duration: 220.ms,
+    );
   }
 }
 
@@ -606,35 +646,35 @@ class _SettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HealthCard(
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          _SettingsTile(
-            icon: LucideIcons.user,
-            color: const Color(0xFF0B7A86),
-            title: 'Informasi Akun',
-            subtitle: 'Edit nama, foto, dan nomor telepon',
-            onTap: onTapAccount,
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              _SettingsTile(
+                icon: LucideIcons.user,
+                color: const Color(0xFF0B7A86),
+                title: 'Informasi Akun',
+                subtitle: 'Edit nama, foto, dan nomor telepon',
+                onTap: onTapAccount,
+              ),
+              const Divider(height: 1, color: SgColors.border),
+              _SettingsTile(
+                icon: LucideIcons.shield,
+                color: const Color(0xFF34A853),
+                title: 'Privasi & Keamanan',
+                subtitle: 'Kebijakan privasi dan keamanan akun',
+                onTap: onTapPrivacy,
+              ),
+              const Divider(height: 1, color: SgColors.border),
+              _SettingsTile(
+                icon: LucideIcons.messageCircle,
+                color: const Color(0xFF3B82F6),
+                title: 'Bantuan',
+                subtitle: 'FAQ, pusat bantuan, hubungi admin',
+                onTap: onTapHelp,
+              ),
+            ],
           ),
-          const Divider(height: 1, color: SgColors.border),
-          _SettingsTile(
-            icon: LucideIcons.shield,
-            color: const Color(0xFF34A853),
-            title: 'Privasi & Keamanan',
-            subtitle: 'Kebijakan privasi dan keamanan akun',
-            onTap: onTapPrivacy,
-          ),
-          const Divider(height: 1, color: SgColors.border),
-          _SettingsTile(
-            icon: LucideIcons.messageCircle,
-            color: const Color(0xFF3B82F6),
-            title: 'Bantuan',
-            subtitle: 'FAQ, pusat bantuan, hubungi admin',
-            onTap: onTapHelp,
-          ),
-        ],
-      ),
-    )
+        )
         .animate()
         .fadeIn(duration: 280.ms, curve: Curves.easeOut)
         .slideY(begin: 0.02, end: 0, duration: 280.ms, curve: Curves.easeOut);
@@ -681,18 +721,15 @@ class _SettingsTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(
-              LucideIcons.chevronRight,
-              color: SgColors.textSecondary,
-            ),
+            const Icon(LucideIcons.chevronRight, color: SgColors.textSecondary),
           ],
         ),
       ),
     ).animate().scale(
-          begin: const Offset(1, 1),
-          end: const Offset(0.99, 0.99),
-          duration: 140.ms,
-        );
+      begin: const Offset(1, 1),
+      end: const Offset(0.99, 0.99),
+      duration: 140.ms,
+    );
   }
 }
 
@@ -723,38 +760,37 @@ class _LogoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HealthCard(
-      color: const Color(0xFFFFF5F5),
-      borderColor: const Color(0xFFFFCDD2),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE53935).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              LucideIcons.logOut,
-              color: Color(0xFFE53935),
-            ),
+          color: const Color(0xFFFFF5F5),
+          borderColor: const Color(0xFFFFCDD2),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE53935).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(LucideIcons.logOut, color: Color(0xFFE53935)),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Keluar Aplikasi',
+                  style: AppTypography.h3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              TextButton(
+                onPressed: onLogout,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFE53935),
+                ),
+                child: const Text('Keluar'),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Text(
-              'Keluar Aplikasi',
-              style: AppTypography.h3,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          TextButton(
-            onPressed: onLogout,
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFFE53935)),
-            child: const Text('Keluar'),
-          ),
-        ],
-      ),
-    )
+        )
         .animate()
         .fadeIn(duration: 240.ms, curve: Curves.easeOut)
         .slideY(begin: 0.02, end: 0, duration: 240.ms, curve: Curves.easeOut);
@@ -830,7 +866,7 @@ Future<bool?> _confirmLogout(BuildContext context) {
     barrierLabel: 'logout',
     barrierDismissible: true,
     barrierColor: Colors.black.withValues(alpha: 0.38),
-    pageBuilder: (context, _, __) {
+    pageBuilder: (context, _, _) {
       return Center(
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -838,97 +874,115 @@ Future<bool?> _confirmLogout(BuildContext context) {
             padding: const EdgeInsets.all(20),
             child: Material(
               color: Colors.transparent,
-              child: Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(maxWidth: 420),
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 30,
-                      offset: const Offset(0, 18),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: const [
-                        Icon(
-                          LucideIcons.logOut,
-                          color: Color(0xFFE53935),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Konfirmasi Keluar',
-                            style: AppTypography.h2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Apakah Anda yakin ingin keluar?',
-                      style: AppTypography.body,
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 52,
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.of(context).pop(false),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: SgColors.textPrimary,
-                                side: const BorderSide(color: SgColors.border),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              child: const Text(
-                                'Batal',
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
+              child:
+                  Container(
+                        width: double.infinity,
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 30,
+                              offset: const Offset(0, 18),
                             ),
-                          ),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: SizedBox(
-                            height: 52,
-                            child: FilledButton(
-                              onPressed: () => Navigator.of(context).pop(true),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFFE53935),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: const [
+                                Icon(
+                                  LucideIcons.logOut,
+                                  color: Color(0xFFE53935),
                                 ),
-                              ),
-                              child: const Text(
-                                'Keluar',
-                                style: TextStyle(fontWeight: FontWeight.w800),
-                              ),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    'Konfirmasi Keluar',
+                                    style: AppTypography.h2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              'Apakah Anda yakin ingin keluar?',
+                              style: AppTypography.body,
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 52,
+                                    child: OutlinedButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: SgColors.textPrimary,
+                                        side: const BorderSide(
+                                          color: SgColors.border,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Batal',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 52,
+                                    child: FilledButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xFFE53935,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        'Keluar',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
-                ),
-              ).animate().fadeIn(duration: 180.ms).scale(
-                    begin: const Offset(0.98, 0.98),
-                    end: const Offset(1, 1),
-                    duration: 180.ms,
-                    curve: Curves.easeOut,
-                  ),
+                      )
+                      .animate()
+                      .fadeIn(duration: 180.ms)
+                      .scale(
+                        begin: const Offset(0.98, 0.98),
+                        end: const Offset(1, 1),
+                        duration: 180.ms,
+                        curve: Curves.easeOut,
+                      ),
             ),
           ),
         ),
@@ -944,12 +998,6 @@ Future<bool?> _confirmLogout(BuildContext context) {
   );
 }
 
-void _toast(BuildContext context, String message) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
-  );
-}
-
 String _profileRoleToLabel(String role, String fallbackPhone) {
   final v = role.toLowerCase();
   if (v.contains('ortu') || v.contains('orang_tua') || v.contains('parent')) {
@@ -961,7 +1009,10 @@ String _profileRoleToLabel(String role, String fallbackPhone) {
   return fallbackPhone.isEmpty ? 'Akun Aktif' : fallbackPhone;
 }
 
-Future<void> _showEditChildDialog(BuildContext context, MobileChildModel child) async {
+Future<void> _showEditChildDialog(
+  BuildContext context,
+  MobileChildModel child,
+) async {
   final api = ApiService();
   final nameController = TextEditingController(text: child.nama);
   String gender = child.jenisKelamin;
@@ -984,7 +1035,7 @@ Future<void> _showEditChildDialog(BuildContext context, MobileChildModel child) 
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
-                    value: gender,
+                    initialValue: gender,
                     items: const [
                       DropdownMenuItem(value: 'L', child: Text('Laki-laki')),
                       DropdownMenuItem(value: 'P', child: Text('Perempuan')),
@@ -993,7 +1044,9 @@ Future<void> _showEditChildDialog(BuildContext context, MobileChildModel child) 
                       if (v == null) return;
                       setLocal(() => gender = v);
                     },
-                    decoration: const InputDecoration(labelText: 'Jenis Kelamin'),
+                    decoration: const InputDecoration(
+                      labelText: 'Jenis Kelamin',
+                    ),
                   ),
                   const SizedBox(height: 10),
                   OutlinedButton(
@@ -1038,7 +1091,9 @@ Future<void> _showEditChildDialog(BuildContext context, MobileChildModel child) 
                     );
                     final children = await api.getChildren();
                     SgiziAppState.instance.setChildren(children);
-                    if (dialogContext.mounted) Navigator.of(dialogContext).pop();
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop();
+                    }
                   } catch (e) {
                     if (!dialogContext.mounted) return;
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
@@ -1056,7 +1111,10 @@ Future<void> _showEditChildDialog(BuildContext context, MobileChildModel child) 
   );
 }
 
-Future<void> _showDeleteChildDialog(BuildContext context, MobileChildModel child) async {
+Future<void> _showDeleteChildDialog(
+  BuildContext context,
+  MobileChildModel child,
+) async {
   final api = ApiService();
   final confirm = await showDialog<bool>(
     context: context,
@@ -1070,7 +1128,9 @@ Future<void> _showDeleteChildDialog(BuildContext context, MobileChildModel child
         ),
         FilledButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          style: FilledButton.styleFrom(backgroundColor: const Color(0xFFE53935)),
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFFE53935),
+          ),
           child: const Text('Hapus'),
         ),
       ],
@@ -1084,8 +1144,8 @@ Future<void> _showDeleteChildDialog(BuildContext context, MobileChildModel child
     SgiziAppState.instance.setChildren(children);
   } catch (e) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Gagal hapus anak: $e')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Gagal hapus anak: $e')));
   }
 }

@@ -1,49 +1,46 @@
-class NewsArticleModel {
-  const NewsArticleModel({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.content,
-    required this.category,
-    required this.createdAt,
-    this.sourceName,
-    this.image,
-    this.url,
-  });
+import 'article_model.dart';
 
-  final int id;
-  final String title;
-  final String description;
-  final String content;
-  final String category;
-  final String createdAt;
-  final String? sourceName;
-  final String? image;
-  final String? url;
+class NewsArticleModel extends ArticleModel {
+  const NewsArticleModel({
+    required super.id,
+    required super.title,
+    required super.description,
+    required super.content,
+    required super.category,
+    required String createdAt,
+    String? sourceName,
+    String? image,
+    String? url,
+    super.author,
+  }) : super(
+         publishedAt: createdAt,
+         source: sourceName,
+         imageUrl: image,
+         articleUrl: url,
+       );
+
+  String get createdAt => publishedAt;
+  String? get sourceName => source;
+  String? get image => imageUrl;
+  String? get url => articleUrl;
 
   factory NewsArticleModel.fromJson(Map<String, dynamic> json) {
+    final article = ArticleModel.fromJson(json);
+    return NewsArticleModel.fromArticle(article);
+  }
+
+  factory NewsArticleModel.fromArticle(ArticleModel article) {
     return NewsArticleModel(
-      id: (json['id'] as num?)?.toInt() ?? 0,
-      title: json['title'] as String? ?? '-',
-      description:
-          (json['description'] as String? ?? json['excerpt'] as String? ?? '-')
-              .trim(),
-      content: (json['content'] as String? ?? '').trim(),
-      category: (json['category'] as String? ?? 'Nutrisi Anak').trim(),
-      createdAt:
-          (json['created_at'] as String? ?? json['published_at'] as String? ?? '')
-              .trim(),
-      sourceName: (json['source_name'] as String? ?? '').trim().isEmpty
-          ? null
-          : json['source_name'] as String?,
-      image: (json['image'] as String? ?? json['image_url'] as String? ?? '')
-          .trim()
-          .isEmpty
-      ? null
-      : (json['image'] as String? ?? json['image_url'] as String?),
-      url: (json['url'] as String? ?? '').trim().isEmpty
-          ? null
-          : json['url'] as String?,
+      id: article.id,
+      title: article.title,
+      description: article.description,
+      content: article.content,
+      category: article.category,
+      createdAt: article.publishedAt,
+      sourceName: article.source,
+      image: article.imageUrl,
+      url: article.articleUrl,
+      author: article.author,
     );
   }
 }

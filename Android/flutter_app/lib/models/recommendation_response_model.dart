@@ -28,10 +28,10 @@ class RecommendationResponseModel {
           json['resolved_status'] as String? ??
           json['status'] as String? ??
           '-',
-      primaryCategory: normalized['primary_category'] as String? ?? 'Normal',
+      primaryCategory: normalized['primary_category'] as String? ?? 'Gizi Baik',
       matchedCategories: rawCategories is List
           ? rawCategories.whereType<String>().toList()
-          : const ['Normal'],
+          : const ['Gizi Baik'],
       items: (json['data'] as List<dynamic>? ?? const [])
           .whereType<Map<String, dynamic>>()
           .map(RekomendasiModel.fromJson)

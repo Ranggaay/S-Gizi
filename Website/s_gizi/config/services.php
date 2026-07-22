@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'wa' => [
+        'url'     => env('WA_SERVICE_URL', 'http://localhost:3001'),
+        'secret'  => env('WA_SERVICE_SECRET', 'changeme'),
+        'enabled' => env('WA_ENABLED', false),
+    ],
+
 ];

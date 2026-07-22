@@ -6,16 +6,18 @@ use Carbon\Carbon;
 
 class AgeService
 {
-    /**
-     * Umur dalam bulan (desimal) berbasis selisih hari.
-     * Tidak membulatkan di tengah proses.
-     */
+    private const AVERAGE_DAYS_PER_MONTH = 30.4375;
+
+    public function ageInDays(Carbon $tanggalLahir, Carbon $tanggalUkur): int
+    {
+        return (int) $tanggalLahir
+            ->copy()
+            ->startOfDay()
+            ->diffInDays($tanggalUkur->copy()->startOfDay(), false);
+    }
+
     public function ageInMonthsDecimal(Carbon $tanggalLahir, Carbon $tanggalUkur): float
     {
-        $days = $tanggalLahir->diffInDays($tanggalUkur);
-
-        // WHO umumnya memakai bulan sebagai 30.4375 hari (365.25/12) untuk pendekatan.
-        return $days / 30.4375;
+        return $this->ageInDays($tanggalLahir, $tanggalUkur) / self::AVERAGE_DAYS_PER_MONTH;
     }
 }
-

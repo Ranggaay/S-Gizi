@@ -23,7 +23,7 @@
                     <div class="form-text">Harus sama persis dengan output `status_gabungan` API.</div>
                 </div>
                 <div class="col-md-2 d-grid">
-                    <button class="btn btn-primary">Simpan</button>
+                    <button class="btn btn-primary" type="submit">Simpan</button>
                 </div>
             </form>
         </div>
@@ -58,7 +58,7 @@
                         <td>{{ $m->food?->nama }}</td>
                         <td><span class="badge text-bg-secondary">{{ $m->food?->kategori }}</span></td>
                         <td class="text-end">
-                            <form class="d-inline" method="post" action="{{ route('admin.food_conditions.destroy', $m) }}" onsubmit="return confirm('Hapus mapping ini?')">
+                            <form class="d-inline" method="post" action="{{ route('admin.food_conditions.destroy', $m) }}" data-confirm="Hapus mapping ini?">
                                 @csrf
                                 @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger">Hapus</button>
@@ -76,4 +76,3 @@
         </div>
     </div>
 </x-admin-layout>
-

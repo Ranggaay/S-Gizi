@@ -23,6 +23,8 @@ class ConsultationRoom extends Model
         'last_message',
         'last_message_at',
         'unread_count',
+        'last_shared_measurement_id',
+        'started_by',
     ];
 
     protected $casts = [

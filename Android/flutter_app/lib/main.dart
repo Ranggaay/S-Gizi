@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
-import 'app_design.dart';
-import 'services/local_notification_service.dart';
-import 'screens/splash_screen.dart';
+import 'package:s_gizi/app_design.dart';
+import 'package:s_gizi/services/local_notification_service.dart';
+import 'package:s_gizi/features/auth/screens/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await LocalNotificationService.instance.init();
+
   runApp(const GiziApp());
 }
 

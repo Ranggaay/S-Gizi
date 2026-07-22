@@ -18,7 +18,7 @@ class _InputScreenState extends State<InputScreen> {
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
 
-  String _jenisKelamin = 'L';
+  final String _jenisKelamin = 'L';
   String _caraUkur = 'standing';
   DateTime? _birthDate;
   DateTime? _measurementDate;

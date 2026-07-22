@@ -44,6 +44,7 @@ class _AddChildScreenState extends State<AddChildScreen>
   void initState() {
     super.initState();
     _selectedExistingChildId = _appState.activeChildId;
+    _nameController.addListener(_refreshAvatar);
     _shakeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 450),
@@ -52,10 +53,15 @@ class _AddChildScreenState extends State<AddChildScreen>
 
   @override
   void dispose() {
+    _nameController.removeListener(_refreshAvatar);
     _nameController.dispose();
     _dateController.dispose();
     _shakeController.dispose();
     super.dispose();
+  }
+
+  void _refreshAvatar() {
+    if (mounted) setState(() {});
   }
 
   bool get _isValid {
@@ -110,9 +116,9 @@ class _AddChildScreenState extends State<AddChildScreen>
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: const Color(0xFF0B7A86),
-            ),
+            colorScheme: Theme.of(
+              context,
+            ).colorScheme.copyWith(primary: const Color(0xFF0B7A86)),
           ),
           child: child!,
         );
@@ -180,187 +186,145 @@ class _AddChildScreenState extends State<AddChildScreen>
                       child: child,
                     );
                   },
-                  child: HealthCard(
-                    padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Detail Data Anak', style: AppTypography.h2),
-                        const SizedBox(height: 4),
-                        const Text(
-                          'Lengkapi informasi untuk analisis gizi tepat.',
-                          style: AppTypography.body,
-                        ),
-                        const SizedBox(height: 18),
-                        Center(
-                          child: Column(
-                            children: [
-                              Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Container(
-                                    width: 110,
-                                    height: 110,
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFEFF9F8),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: const Color(0xFF0B7A86),
-                                        width: 2.2,
+                  child:
+                      HealthCard(
+                            padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Detail Data Anak',
+                                  style: AppTypography.h2,
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  'Lengkapi informasi untuk analisis gizi tepat.',
+                                  style: AppTypography.body,
+                                ),
+                                const SizedBox(height: 18),
+                                Center(
+                                  child: Column(
+                                    children: [
+                                      SgAvatar(
+                                            name: _nameController.text,
+                                            gender: _gender,
+                                            radius: 55,
+                                            icon: Icons.child_care_rounded,
+                                          )
+                                          .animate(
+                                            onPlay: (c) =>
+                                                c.repeat(reverse: true),
+                                          )
+                                          .scale(
+                                            begin: const Offset(0.98, 0.98),
+                                            end: const Offset(1.02, 1.02),
+                                            duration: 2.seconds,
+                                          ),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        getInitialName(_nameController.text),
+                                        style: AppTypography.h3.copyWith(
+                                          color: const Color(0xFF0B7A86),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 18),
+                                _FieldLabel('NAMA LENGKAP'),
+                                const SizedBox(height: 8),
+                                TextField(
+                                  controller: _nameController,
+                                  textInputAction: TextInputAction.next,
+                                  onChanged: (_) {
+                                    if (_showValidation) setState(() {});
+                                  },
+                                  decoration: _inputDecoration(
+                                    hint: 'Contoh: Arkan Syahputra',
+                                    icon: PhosphorIconsRegular.user,
+                                    showError:
+                                        _showValidation &&
+                                        _nameController.text.trim().isEmpty,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                _FieldLabel('JENIS KELAMIN'),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _GenderOption(
+                                        label: 'Laki-laki',
+                                        active: _gender == 'L',
+                                        onTap: () =>
+                                            setState(() => _gender = 'L'),
                                       ),
                                     ),
-                                    child: ClipOval(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(18),
-                                        child: Image.asset(
-                                          'assets/image/logo_sgizi.png',
-                                          fit: BoxFit.contain,
-                                        ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: _GenderOption(
+                                        label: 'Perempuan',
+                                        active: _gender == 'P',
+                                        onTap: () =>
+                                            setState(() => _gender = 'P'),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_showValidation && _gender == null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 6),
+                                    child: Text(
+                                      'Pilih jenis kelamin.',
+                                      style: AppTypography.caption.copyWith(
+                                        color: SgColors.danger,
                                       ),
                                     ),
                                   ),
-                                  Positioned(
-                                    right: -2,
-                                    bottom: -2,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Upload foto akan tersedia pada versi berikutnya.',
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      child: Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF0B7A86),
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(alpha: 0.12),
-                                              blurRadius: 10,
-                                              offset: const Offset(0, 4),
-                                            ),
-                                          ],
-                                        ),
-                                        child: const Icon(
-                                          LucideIcons.camera,
-                                          color: Colors.white,
-                                          size: 16,
-                                        ),
-                                      ),
+                                const SizedBox(height: 16),
+                                _FieldLabel('TANGGAL LAHIR'),
+                                const SizedBox(height: 8),
+                                TextField(
+                                  controller: _dateController,
+                                  readOnly: true,
+                                  onTap: _pickDate,
+                                  decoration: _inputDecoration(
+                                    hint: 'Pilih tanggal lahir',
+                                    icon: LucideIcons.calendarDays,
+                                    showError:
+                                        _showValidation && _birthDate == null,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                if (_birthDate != null)
+                                  Text(
+                                    'Umur: ${formatAgeFromBirthDate(_toApiDate(_birthDate!), source: 'add_child_birthdate_preview')}',
+                                    style: AppTypography.caption.copyWith(
+                                      color: const Color(0xFF0B7A86),
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                if (_error != null) ...[
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    _error!,
+                                    style: AppTypography.caption.copyWith(
+                                      color: SgColors.danger,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ],
-                              ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
-                                begin: const Offset(0.98, 0.98),
-                                end: const Offset(1.02, 1.02),
-                                duration: 2.seconds,
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Unggah Foto Anak',
-                                style: AppTypography.h3.copyWith(
-                                  color: const Color(0xFF0B7A86),
+                                const SizedBox(height: 18),
+                                _SaveButton(
+                                  loading: _loading,
+                                  onTap: _loading ? null : _save,
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        _FieldLabel('NAMA LENGKAP'),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _nameController,
-                          textInputAction: TextInputAction.next,
-                          onChanged: (_) {
-                            if (_showValidation) setState(() {});
-                          },
-                          decoration: _inputDecoration(
-                            hint: 'Contoh: Arkan Syahputra',
-                            icon: PhosphorIconsRegular.user,
-                            showError:
-                                _showValidation && _nameController.text.trim().isEmpty,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _FieldLabel('JENIS KELAMIN'),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _GenderOption(
-                                label: 'Laki-laki',
-                                active: _gender == 'L',
-                                onTap: () => setState(() => _gender = 'L'),
-                              ),
+                              ],
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _GenderOption(
-                                label: 'Perempuan',
-                                active: _gender == 'P',
-                                onTap: () => setState(() => _gender = 'P'),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (_showValidation && _gender == null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              'Pilih jenis kelamin.',
-                              style: AppTypography.caption.copyWith(
-                                color: SgColors.danger,
-                              ),
-                            ),
-                          ),
-                        const SizedBox(height: 16),
-                        _FieldLabel('TANGGAL LAHIR'),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _dateController,
-                          readOnly: true,
-                          onTap: _pickDate,
-                          decoration: _inputDecoration(
-                            hint: 'Pilih tanggal lahir',
-                            icon: LucideIcons.calendarDays,
-                            showError: _showValidation && _birthDate == null,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        if (_birthDate != null)
-                          Text(
-                            'Umur: ${formatAgeFromBirthDate(_toApiDate(_birthDate!))}',
-                            style: AppTypography.caption.copyWith(
-                              color: const Color(0xFF0B7A86),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        if (_error != null) ...[
-                          const SizedBox(height: 10),
-                          Text(
-                            _error!,
-                            style: AppTypography.caption.copyWith(
-                              color: SgColors.danger,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 18),
-                        _SaveButton(
-                          loading: _loading,
-                          onTap: _loading ? null : _save,
-                        ),
-                      ],
-                    ),
-                  ).animate().fadeIn(delay: 100.ms, duration: 320.ms).slideY(
-                    begin: 0.1,
-                    end: 0,
-                  ),
+                          )
+                          .animate()
+                          .fadeIn(delay: 100.ms, duration: 320.ms)
+                          .slideY(begin: 0.1, end: 0),
                 ),
                 const SizedBox(height: 14),
                 HealthCard(
@@ -472,7 +436,9 @@ class _GenderOption extends StatelessWidget {
         height: 44,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: active ? const Color(0xFF0B7A86).withValues(alpha: 0.10) : Colors.white,
+          color: active
+              ? const Color(0xFF0B7A86).withValues(alpha: 0.10)
+              : Colors.white,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
             color: active ? const Color(0xFF0B7A86) : const Color(0xFFE0E7E4),
@@ -504,64 +470,67 @@ class _SaveButtonState extends State<_SaveButton> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapCancel: () => setState(() => _pressed = false),
-      onTapUp: (_) => setState(() => _pressed = false),
-      child: AnimatedScale(
-        scale: _pressed ? 0.98 : 1,
-        duration: const Duration(milliseconds: 160),
-        child: Container(
-          width: double.infinity,
-          height: 56,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0B7A86), Color(0xFF1597A4)],
-            ),
-            borderRadius: BorderRadius.circular(999),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0B7A86).withValues(alpha: 0.28),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapCancel: () => setState(() => _pressed = false),
+          onTapUp: (_) => setState(() => _pressed = false),
+          child: AnimatedScale(
+            scale: _pressed ? 0.98 : 1,
+            duration: const Duration(milliseconds: 160),
+            child: Container(
+              width: double.infinity,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0B7A86), Color(0xFF1597A4)],
+                ),
+                borderRadius: BorderRadius.circular(999),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0B7A86).withValues(alpha: 0.28),
+                    blurRadius: 18,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(999),
-              onTap: widget.onTap,
-              child: Center(
-                child: widget.loading
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Simpan & Lanjutkan',
-                            style: AppTypography.h2.copyWith(color: Colors.white),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(999),
+                  onTap: widget.onTap,
+                  child: Center(
+                    child: widget.loading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Simpan & Lanjutkan',
+                                style: AppTypography.h2.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Icon(
+                                LucideIcons.arrowRight,
+                                color: Colors.white,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 10),
-                          const Icon(LucideIcons.arrowRight, color: Colors.white),
-                        ],
-                      ),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
-    ).animate(onPlay: (c) => c.repeat(reverse: true)).moveY(
-      begin: 0,
-      end: -2,
-      duration: 1800.ms,
-    );
+        )
+        .animate(onPlay: (c) => c.repeat(reverse: true))
+        .moveY(begin: 0, end: -2, duration: 1800.ms);
   }
 }
 
@@ -583,7 +552,7 @@ class _ChildSelectorRow extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: children.length + 1,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           if (index == children.length) {
             return Container(
@@ -618,7 +587,9 @@ class _ChildSelectorRow extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
-                  color: active ? const Color(0xFF0B7A86) : const Color(0xFFE2EAE7),
+                  color: active
+                      ? const Color(0xFF0B7A86)
+                      : const Color(0xFFE2EAE7),
                   width: active ? 1.8 : 1,
                 ),
                 boxShadow: [
@@ -636,7 +607,6 @@ class _ChildSelectorRow extends StatelessWidget {
                       ChildAvatar(
                         name: child.nama,
                         gender: child.jenisKelamin,
-                        photoUrl: child.photoUrl,
                         radius: 22,
                       ),
                       if (active)
@@ -665,7 +635,10 @@ class _ChildSelectorRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    formatAgeFromBirthDate(child.tanggalLahir),
+                    formatAgeFromBirthDate(
+                      child.tanggalLahir,
+                      source: 'add_child_existing_child_card',
+                    ),
                     style: AppTypography.caption,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

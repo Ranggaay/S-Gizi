@@ -1,13 +1,11 @@
+import 'package:s_gizi/core/helpers/nutrition_status_helper.dart';
+
 class ClassificationService {
   // =========================
   // KLASIFIKASI UMUM (Z-SCORE)
   // =========================
   String classify(double zScore) {
-    if (zScore < -3) return 'Severe';
-    if (zScore < -2) return 'Moderate';
-    if (zScore <= 2) return 'Normal';
-    if (zScore <= 3) return 'Overweight';
-    return 'Obese';
+    return NutritionStatusHelper.bbtbFromZ(zScore);
   }
 
   // =========================
@@ -15,15 +13,15 @@ class ClassificationService {
   // =========================
   String interpretWeightForAge(double zScore) {
     if (zScore < -3) {
-      return 'Gizi buruk (berat badan sangat kurang)';
+      return 'Berat Badan Sangat Kurang';
     }
     if (zScore < -2) {
-      return 'Gizi kurang (underweight)';
+      return 'Berat Badan Kurang';
     }
-    if (zScore > 2) {
-      return 'Berat badan lebih dari standar usia';
+    if (zScore > 1) {
+      return 'Risiko Berat Badan Lebih';
     }
-    return 'Berat badan sesuai dengan standar usia';
+    return 'Berat Badan Normal';
   }
 
   // =========================
@@ -31,10 +29,10 @@ class ClassificationService {
   // =========================
   String interpretHeightForAge(double zScore) {
     if (zScore < -3) {
-      return 'Sangat pendek (stunting berat)';
+      return 'Sangat Pendek';
     }
     if (zScore < -2) {
-      return 'Pendek (stunting)';
+      return 'Pendek';
     }
     if (zScore < -1) {
       return 'Tinggi badan sedikit di bawah standar';
@@ -47,18 +45,19 @@ class ClassificationService {
   // =========================
   String interpretWeightForHeight(double zScore) {
     if (zScore < -3) {
-      return 'Gizi buruk (wasting berat)';
+      return 'Gizi Buruk';
     }
     if (zScore < -2) {
-      return 'Gizi kurang (wasting)';
+      return 'Gizi Kurang';
+    }
+    if (zScore <= 1) {
+      return 'Gizi Baik';
     }
     if (zScore <= 2) {
-      return 'Status gizi normal';
+      return 'Risiko Berat Badan Lebih';
     }
-    if (zScore <= 3) {
-      return 'Berisiko gizi lebih';
-    }
-    return 'Obesitas';
+    if (zScore <= 3) return 'Gizi Lebih';
+    return NutritionStatusHelper.obesitas;
   }
 
   // =========================
@@ -71,13 +70,13 @@ class ClassificationService {
   }) {
     final masalah = <String>[];
 
-    if (bbU < -2) masalah.add('berat badan kurang');
-    if (tbU < -2) masalah.add('stunting');
-    if (bbTb < -2) masalah.add('wasting');
+    if (bbU < -2) masalah.add('Berat Badan Kurang');
+    if (tbU < -2) masalah.add('Pendek');
+    if (bbTb < -2) masalah.add('Gizi Kurang');
     if (bbTb > 2) masalah.add('gizi lebih');
 
     if (masalah.isEmpty) {
-      return 'Status gizi anak normal berdasarkan indikator WHO.';
+      return 'Status gizi anak baik berdasarkan indikator WHO.';
     }
 
     return 'Anak mengalami ${masalah.join(', ')}.';

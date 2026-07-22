@@ -11,6 +11,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             LMSSeeder::class,
             MakananSeeder::class,
+            NutritionistSeeder::class,
+            ParentDemoSeeder::class,
         ]);
     }
 }

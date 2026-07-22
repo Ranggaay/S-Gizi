@@ -6,9 +6,7 @@ class StatusGiziService
 {
     /**
      * Prioritas penentuan status sesuai permintaan:
-     * 1) BB/TB (wasting/overweight)
-     * 2) TB/U (stunting)
-     * 3) BB/U (underweight)
+     * Status Indonesia sesuai Permenkes No. 2 Tahun 2020.
      */
     public function statusGabungan(float $zBbtb, float $zTbu, float $zBbu): string
     {
@@ -22,13 +20,13 @@ class StatusGiziService
 
         // Aturan TB/U (stunting)
         if ($zTbu < -3.0) {
-            return 'Stunting Berat';
+            return 'Sangat Pendek';
         }
         if ($zTbu < -2.0 && $zBbtb > 1.0) {
-            return 'Stunting + Risiko Gizi Lebih';
+            return 'Pendek + Risiko Berat Badan Lebih';
         }
         if ($zTbu < -2.0) {
-            return 'Stunting';
+            return 'Pendek';
         }
 
         // Aturan BB/TB (gizi lebih)
@@ -39,15 +37,17 @@ class StatusGiziService
             return 'Gizi Lebih';
         }
         if ($zBbtb > 1.0) {
-            return 'Risiko Gizi Lebih';
+            return 'Risiko Berat Badan Lebih';
         }
 
-        // Aturan BB/U (underweight)
+        // Aturan BB/U
+        if ($zBbu < -3.0) {
+            return 'Berat Badan Sangat Kurang';
+        }
         if ($zBbu < -2.0) {
-            return 'Gizi Kurang';
+            return 'Berat Badan Kurang';
         }
 
-        return 'Normal';
+        return 'Gizi Baik';
     }
 }
-

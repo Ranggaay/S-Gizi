@@ -18,6 +18,8 @@ class ArticleController extends Controller
 
         $query = Article::query()
             ->where('published', true)
+            ->where('status', 'Published')
+            ->latest('published_at')
             ->latest();
 
         if ($category !== '' && strtolower($category) !== 'semua') {
@@ -28,6 +30,7 @@ class ArticleController extends Controller
             ->limit($limit)
             ->get()
             ->map(function (Article $article) {
+                $article->increment('views_count');
                 $excerpt = trim((string) ($article->excerpt ?? ''));
                 $content = trim((string) ($article->content ?? ''));
 
@@ -43,9 +46,14 @@ class ArticleController extends Controller
                     'description' => $excerpt !== '' ? $excerpt : '-',
                     'content' => $content,
                     'category' => (string) ($article->category ?? 'Nutrisi Anak'),
-                    'created_at' => optional($article->created_at)->toISOString(),
+                    'tags' => $article->tags ?? [],
+                    'slug' => (string) ($article->slug ?? ''),
+                    'author' => (string) ($article->author ?? 'Admin S-Gizi'),
+                    'read_time' => (int) ($article->read_time ?: 1),
+                    'views_count' => (int) ($article->views_count + 1),
+                    'created_at' => optional($article->published_at ?? $article->created_at)->toISOString(),
                     // field opsional agar model Flutter tetap aman
-                    'image' => null,
+                    'image' => $article->thumbnail ? asset($article->thumbnail) : null,
                     'url' => null,
                     'source_name' => 'S-Gizi',
                 ];
@@ -58,4 +66,3 @@ class ArticleController extends Controller
         ]);
     }
 }
-

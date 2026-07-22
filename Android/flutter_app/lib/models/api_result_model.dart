@@ -47,6 +47,12 @@ class AnalysisMeasurementModel {
     required this.childName,
     required this.tanggalUkur,
     required this.caraUkur,
+    this.isAnomaly = false,
+    this.dataStatus = 'normal',
+    this.validationStatus = 'valid',
+    this.validationNote = '',
+    this.monitoringStatus = 'normal',
+    this.isConfirmedByParent = false,
   });
 
   final int id;
@@ -54,6 +60,12 @@ class AnalysisMeasurementModel {
   final String childName;
   final String tanggalUkur;
   final String? caraUkur;
+  final bool isAnomaly;
+  final String dataStatus;
+  final String validationStatus;
+  final String validationNote;
+  final String monitoringStatus;
+  final bool isConfirmedByParent;
 
   factory AnalysisMeasurementModel.fromJson(Map<String, dynamic> json) {
     return AnalysisMeasurementModel(
@@ -62,15 +74,30 @@ class AnalysisMeasurementModel {
       childName: json['child_name'] as String? ?? '-',
       tanggalUkur: json['tanggal_ukur'] as String? ?? '-',
       caraUkur: json['cara_ukur'] as String?,
+      isAnomaly: json['is_anomaly'] == true,
+      dataStatus: json['data_status'] as String? ?? 'normal',
+      validationStatus: json['validation_status'] as String? ?? 'valid',
+      validationNote: json['validation_note'] as String? ?? '',
+      monitoringStatus: json['monitoring_status'] as String? ?? 'normal',
+      isConfirmedByParent: json['is_confirmed_by_parent'] == true,
     );
   }
 }
 
 class IdentitasModel {
-  const IdentitasModel({required this.umurBulan, required this.jenisKelamin});
+  const IdentitasModel({
+    required this.umurBulan,
+    required this.jenisKelamin,
+    required this.caraUkur,
+    required this.standarBbtb,
+    this.umurHari,
+  });
 
   final double umurBulan;
   final String jenisKelamin;
+  final String caraUkur;
+  final String standarBbtb;
+  final int? umurHari;
 
   factory IdentitasModel.fromJson(Map<String, dynamic> json) {
     double parseNum(dynamic v) {
@@ -81,6 +108,9 @@ class IdentitasModel {
     return IdentitasModel(
       umurBulan: parseNum(json['umur_bulan']),
       jenisKelamin: json['jenis_kelamin'] as String? ?? '-',
+      caraUkur: json['cara_ukur'] as String? ?? '-',
+      standarBbtb: json['standar_bbtb'] as String? ?? 'BB/TB',
+      umurHari: (json['umur_hari'] as num?)?.toInt(),
     );
   }
 }
@@ -134,6 +164,7 @@ class RekomendasiModel {
     required this.lemak,
     required this.karbohidrat,
     required this.alasan,
+    this.thumbnail,
   });
 
   final String menu;
@@ -142,6 +173,7 @@ class RekomendasiModel {
   final int lemak;
   final int karbohidrat;
   final String alasan;
+  final String? thumbnail;
 
   factory RekomendasiModel.fromJson(Map<String, dynamic> json) {
     int parseInt(dynamic v) {
@@ -157,6 +189,10 @@ class RekomendasiModel {
       lemak: parseInt(json['lemak']),
       karbohidrat: parseInt(json['karbohidrat']),
       alasan: json['alasan'] as String? ?? '-',
+      thumbnail:
+          json['thumbnail'] as String? ??
+          json['image'] as String? ??
+          json['image_url'] as String?,
     );
   }
 }

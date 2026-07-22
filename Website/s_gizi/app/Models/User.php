@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -24,6 +25,15 @@ class User extends Authenticatable
         'email',
         'phone',
         'role',
+        'account_status',
+        'status',
+        'avatar',
+        'last_active_at',
+        'last_login_at',
+        'last_login_ip',
+        'last_login_user_agent',
+        'parent_gender',
+        'tanggal_lahir',
         'password',
         'otp_code',
         'otp_expires_at',
@@ -52,6 +62,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'otp_expires_at' => 'datetime',
+            'tanggal_lahir' => 'date',
+            'last_active_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -59,5 +72,10 @@ class User extends Authenticatable
     public function children(): HasMany
     {
         return $this->hasMany(Child::class);
+    }
+
+    public function nutritionist(): HasOne
+    {
+        return $this->hasOne(Nutritionist::class);
     }
 }

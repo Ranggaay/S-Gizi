@@ -35,4 +35,3 @@ class LocalNotificationService {
     await _plugin.show(id, title, body, details);
   }
 }
-
